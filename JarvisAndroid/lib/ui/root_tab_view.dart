@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'screens/main_translator.dart';
-import 'screens/text_translator_screen.dart';
-import 'screens/mentor_screen.dart';
-import 'screens/photo_translator_screen.dart';
-import 'screens/memory_screen.dart';
-import '../config/app_config.dart';
+import 'package:jarvis_voice_system/ui/screens/main_translator.dart';
+import 'package:jarvis_voice_system/ui/screens/text_translator_screen.dart';
+import 'package:jarvis_voice_system/ui/screens/mentor_screen.dart';
+import 'package:jarvis_voice_system/ui/screens/photo_translator_screen.dart';
+import 'package:jarvis_voice_system/ui/screens/memory_screen.dart';
+import 'package:jarvis_voice_system/config/app_config.dart';
 
 class RootTabView extends StatefulWidget {
   const RootTabView({super.key});

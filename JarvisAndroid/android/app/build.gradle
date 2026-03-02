@@ -42,7 +42,7 @@ android {
 
     defaultConfig {
         applicationId "com.jarvis.voice.system"
-        minSdkVersion flutter.minSdkVersion
+        minSdkVersion 21
         targetSdk 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -58,7 +58,7 @@ android {
 }
 
 flutter {
-    source '..'
+    source '../..'
 }
 
 dependencies {
