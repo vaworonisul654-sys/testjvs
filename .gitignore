@@ -1,0 +1,47 @@
+# Live Voice Translator (iOS & Android)
+
+## macOS
+.DS_Store
+
+## Backups (Protect from upload)
+backup sta2/
+backup_stage4_final/
+backups(FINISH!)stage1/
+
+## iOS / Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+build/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+LiveVoiceTranslator/Config/Debug.xcconfig
+LiveVoiceTranslator/Config/Release.xcconfig
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Android / Flutter
+JarvisAndroid/.dart_tool/
+JarvisAndroid/.flutter-plugins
+JarvisAndroid/.flutter-plugins-dependencies
+JarvisAndroid/.pub-cache/
+JarvisAndroid/.pub/
+JarvisAndroid/build/
+JarvisAndroid/android/app/local.properties
+JarvisAndroid/android/app/key.properties
+JarvisAndroid/android/app/*.keystore
+JarvisAndroid/android/app/*.jks
+JarvisAndroid/lib/config/secrets.dart
+
+## Other
+*.log
+build.log
+build_output_v6.txt
