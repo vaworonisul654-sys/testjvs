@@ -53,10 +53,9 @@ class LearnerProfile {
     this.userContext = const [],
     this.learnedVocabulary = const [],
     this.lastLessonSummary,
-    this.sessionHistory = const [],
-    this.recentMistakes = const [],
-    this.isInitialAssessmentComplete = false,
-  });
+  })  : sessionHistory = [],
+        recentMistakes = [],
+        isInitialAssessmentComplete = false;
 
   Map<String, dynamic> toJson() => {
     'overallLevel': overallLevel,
