@@ -36,6 +36,7 @@ jobs:
       - name: Build APK
         run: |
           cd JarvisAndroid
+          chmod +x android/gradlew
           flutter build apk --release
 
       - name: Upload APK
