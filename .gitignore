@@ -35,7 +35,7 @@ JarvisAndroid/.flutter-plugins-dependencies
 JarvisAndroid/.pub-cache/
 JarvisAndroid/.pub/
 JarvisAndroid/build/
-JarvisAndroid/android/app/local.properties
+JarvisAndroid/android/local.properties
 JarvisAndroid/android/app/key.properties
 JarvisAndroid/android/app/*.keystore
 JarvisAndroid/android/app/*.jks
