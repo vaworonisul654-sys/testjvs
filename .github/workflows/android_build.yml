@@ -26,6 +26,11 @@ jobs:
       - name: Get dependencies
         run: |
           cd JarvisAndroid
+          mkdir -p lib/config
+          # Create dummy secrets if they don't exist (needed for compilation)
+          if [ ! -f lib/config/secrets.dart ]; then
+            echo 'class Secrets { static const String geminiKey = ""; static const String openAIKey = ""; }' > lib/config/secrets.dart
+          fi
           flutter pub get
 
       - name: Build APK
