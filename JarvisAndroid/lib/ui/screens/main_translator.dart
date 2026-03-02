@@ -171,8 +171,7 @@ class MainTranslatorScreen extends StatelessWidget {
     return AvatarGlow(
       animate: isRecording,
       glowColor: isRecording ? Colors.red : Color(AppConfig.primaryColor),
-      duration: const Duration(milliseconds: 2000),
-      repeat: true,
+      glowDuration: const Duration(milliseconds: 2000),
       child: GestureDetector(
         onTap: () => provider.toggleRecording(),
         child: Container(
