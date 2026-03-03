@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'config/app_config.dart';
 import 'state/mentor_provider.dart';
-import 'ui/screens/mentor_screen.dart';
+import 'ui/root_tab_view.dart';
 
 void main() {
   runApp(
@@ -31,7 +31,7 @@ class JarvisApp extends StatelessWidget {
         textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
         useMaterial3: true,
       ),
-      home: const MentorScreen(), // Starting with Brain Core as requested
+      home: const RootTabView(), // All pages connected via RootTabView
     );
   }
 }
