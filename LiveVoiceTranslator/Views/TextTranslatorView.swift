@@ -2,17 +2,12 @@ import SwiftUI
 
 /// Text translation screen — emerald glassmorphism design
 struct TextTranslatorView: View {
-    @State private var viewModel = TextTranslatorViewModel()
     @FocusState private var isInputFocused: Bool
-
-    private let emerald = Color(red: 0, green: 0.88, blue: 0.56)
-    private let teal = Color(red: 0, green: 0.76, blue: 0.66)
-    private let bgColor = Color(red: 0.02, green: 0.027, blue: 0.059)
 
     var body: some View {
         ZStack {
             // Background
-            bgColor.ignoresSafeArea()
+            DesignSystem.Gradients.mainBackground.ignoresSafeArea()
 
             // Subtle emerald glow
             Circle()
@@ -130,7 +125,7 @@ struct TextTranslatorView: View {
         }
         .padding(14)
         .frame(minHeight: 180, maxHeight: .infinity, alignment: .top)
-        .background(glassPanel(isActive: isInputFocused))
+        .glassCard(cornerRadius: 14, borderColor: isInputFocused ? DesignSystem.Colors.emerald : DesignSystem.Colors.glassBorder)
         .onTapGesture {
             isInputFocused = true
         }
@@ -181,7 +176,7 @@ struct TextTranslatorView: View {
         }
         .padding(14)
         .frame(minHeight: 180, maxHeight: .infinity, alignment: .top)
-        .background(glassPanel(isActive: false))
+        .glassCard(cornerRadius: 14)
     }
 
     // MARK: - Banners
@@ -189,7 +184,7 @@ struct TextTranslatorView: View {
     private var apiKeyBanner: some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(emerald)
+                .foregroundStyle(DesignSystem.Colors.emerald)
                 .font(.system(size: 12))
 
             Text("Добавьте OPENAI_API_KEY в Debug.xcconfig")
@@ -201,10 +196,10 @@ struct TextTranslatorView: View {
         .padding(10)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(emerald.opacity(0.06))
+                .fill(DesignSystem.Colors.emerald.opacity(0.06))
                 .overlay(
                     RoundedRectangle(cornerRadius: 10)
-                        .stroke(emerald.opacity(0.12), lineWidth: 1)
+                        .stroke(DesignSystem.Colors.emerald.opacity(0.12), lineWidth: 1)
                 )
         )
     }
@@ -236,27 +231,6 @@ struct TextTranslatorView: View {
                         .stroke(.red.opacity(0.12), lineWidth: 1)
                 )
         )
-    }
-
-    // MARK: - Glass Panel
-
-    private func glassPanel(isActive: Bool) -> some View {
-        RoundedRectangle(cornerRadius: 14)
-            .fill(.white.opacity(0.03))
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(.ultraThinMaterial.opacity(0.2))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(
-                        isActive
-                            ? emerald.opacity(0.3)
-                            : emerald.opacity(0.08),
-                        lineWidth: isActive ? 1.5 : 1
-                    )
-            )
-            .animation(.easeInOut(duration: 0.2), value: isActive)
     }
 }
 
