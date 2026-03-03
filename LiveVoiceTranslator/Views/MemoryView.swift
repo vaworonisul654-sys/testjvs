@@ -11,14 +11,22 @@ struct MemoryView: View {
     var body: some View {
         ZStack {
             // Background
-            bgColor.ignoresSafeArea()
+            DesignSystem.Gradients.mainBackground.ignoresSafeArea()
             
-            // Subtle glow
-            Circle()
-                .fill(emerald.opacity(0.04))
-                .frame(width: 400, height: 400)
-                .offset(y: -150)
-                .blur(radius: 100)
+            // Dynamic Glows
+            ZStack {
+                Circle()
+                    .fill(DesignSystem.Colors.emerald.opacity(0.08))
+                    .frame(width: 450, height: 450)
+                    .offset(x: -100, y: -200)
+                    .blur(radius: 100)
+                
+                Circle()
+                    .fill(DesignSystem.Colors.emerald.opacity(0.04))
+                    .frame(width: 300, height: 300)
+                    .offset(x: 150, y: 100)
+                    .blur(radius: 80)
+            }
             
             VStack(spacing: 0) {
                 // Header
@@ -64,7 +72,7 @@ struct MemoryView: View {
             
             Text("\(viewModel.items.count) из 10 шаблонов")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(emerald.opacity(0.6))
+                .foregroundStyle(DesignSystem.Colors.emerald.opacity(0.6))
         }
     }
     
@@ -147,13 +155,8 @@ struct MemoryView: View {
                     .lineLimit(2)
             }
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 18)
-                .fill(.white.opacity(0.03))
-                .background(RoundedRectangle(cornerRadius: 18).fill(.ultraThinMaterial.opacity(0.1)))
-                .overlay(RoundedRectangle(cornerRadius: 18).stroke(emerald.opacity(0.1), lineWidth: 1))
-        )
+        .padding(20)
+        .glassCard(cornerRadius: 24)
     }
     
     private var plusButton: some View {
