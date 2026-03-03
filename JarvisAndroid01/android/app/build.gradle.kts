@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.jarvis_voice_system"
-    compileSdk = 34 // Hardcoding for stability in CI
+    compileSdk = 36 // Required by flutter_sound, record, path_provider
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -21,11 +21,10 @@ android {
     defaultConfig {
         applicationId = "com.example.jarvis_voice_system"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 36
         multiDexEnabled = true
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = 1
+        versionName = "1.0.0"
     }
 
     buildTypes {
