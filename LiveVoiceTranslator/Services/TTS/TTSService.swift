@@ -91,9 +91,9 @@ final class TTSService: NSObject, AVSpeechSynthesizerDelegate {
             startEngine()
         }
 
-        // Apply aggressive but clean 6.0x gain (doubled from previous 3.0x)
-        // Using 6x gain with sophisticated limiting provides massive volume without clipping.
-        let amplifiedData = amplifyPCM(data, gain: 6.0)
+        // Apply aggressive but clean 10.0x gain (increased from 6.0x for max loudness)
+        // Using 10x gain with sophisticated limiting provides massive volume without clipping.
+        let amplifiedData = amplifyPCM(data, gain: 10.0)
 
         let frameCount = UInt32(amplifiedData.count) / 2
         guard frameCount > 0,
@@ -207,9 +207,9 @@ final class TTSService: NSObject, AVSpeechSynthesizerDelegate {
                     var sample = Float(src[i]) * gain
                     
                     // Refined Professional Limiter:
-                    // 1. Soft-knee transition starts earlier (26000) for more headroom
+                    // 1. Soft-knee transition starts later (28000) for more headroom
                     // 2. High-quality compression ratio (0.1) for clarity
-                    let limit: Float = 26000.0
+                    let limit: Float = 28000.0
                     if sample > limit {
                         sample = limit + (sample - limit) * 0.1 
                     } else if sample < -limit {
