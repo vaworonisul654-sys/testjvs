@@ -4,7 +4,7 @@ struct MentorView: View {
     @State private var viewModel = MentorViewModel()
     @Environment(\.dismiss) private var dismiss
     
-    var autoStart: Bool = true
+    var autoStart: Bool = false
     
     private let emerald = Color(red: 0, green: 0.88, blue: 0.56)
     private let bgColor = Color(red: 0.02, green: 0.027, blue: 0.059)

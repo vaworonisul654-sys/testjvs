@@ -23,6 +23,9 @@ struct LearnerProfile: Codable {
     var lastLessonSummary: String?
     var sessionHistory: [SessionSummary] = []
     
+    /// Accumulated facts about the user (goals, preferences, etc.)
+    var longTermMemory: String = ""
+    
     var isInitialAssessmentComplete: Bool = false
     
     struct SessionSummary: Codable, Identifiable {
@@ -165,6 +168,15 @@ final class LearnerProfileManager {
         }
         
         currentProfile.totalSessions += 1
+        save()
+    }
+    
+    func addLongTermFact(_ fact: String) {
+        if currentProfile.longTermMemory.isEmpty {
+            currentProfile.longTermMemory = fact
+        } else if !currentProfile.longTermMemory.contains(fact) {
+            currentProfile.longTermMemory += "\n- \(fact)"
+        }
         save()
     }
 }

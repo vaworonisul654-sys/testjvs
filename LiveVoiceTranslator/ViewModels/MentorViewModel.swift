@@ -137,7 +137,18 @@ final class MentorViewModel {
         geminiService.onTurnComplete = { [weak self] in
             guard let self = self else { return }
             if !self.currentResponse.isEmpty {
-                self.sessionHistory.insert(MentorMessage(text: self.currentResponse, isUser: false), at: 0)
+                // Parse and save educational context before inserting to history
+                self.parseAndProcessTags(self.currentResponse)
+                
+                // Clean text for UI
+                let cleanText = self.currentResponse
+                    .replacingOccurrences(of: #"\[MISTAKE:.*?\]"#, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: #"\[WORD:.*?\]"#, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: #"\[MEMORY:.*?\]"#, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: #"\[SESSION_SUMMARY:.*?\]"#, with: "", options: .regularExpression)
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                
+                self.sessionHistory.insert(MentorMessage(text: cleanText, isUser: false), at: 0)
                 self.currentResponse = ""
             }
             self.state = .active
@@ -150,9 +161,70 @@ final class MentorViewModel {
         
         geminiService.onSetupComplete = { [weak self] in
             guard let self = self else { return }
-            // If we are auto-starting, force the AI to say its first line
+            // If we are auto-starting (via button press), force the AI to say its first line
             if self.isAutoStarting {
                 self.geminiService.sendTextMessage("Начни.")
+            }
+        }
+    }
+    
+    private func parseAndProcessTags(_ text: String) {
+        // 1. Parse Mistakes [MISTAKE: original | correction | explanation]
+        let mistakeRegex = try? NSRegularExpression(pattern: #"\[MISTAKE:\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\]"#, options: [])
+        let fullRange = NSRange(text.startIndex..<text.endIndex, in: text)
+        
+        mistakeRegex?.enumerateMatches(in: text, options: [], range: fullRange) { match, _, _ in
+            guard let match = match, match.numberOfRanges == 4 else { return }
+            
+            if let originalRange = Range(match.range(at: 1), in: text),
+               let correctionRange = Range(match.range(at: 2), in: text),
+               let explanationRange = Range(match.range(at: 3), in: text) {
+                
+                let original = String(text[originalRange])
+                let correction = String(text[correctionRange])
+                let explanation = String(text[explanationRange])
+                
+                LearnerProfileManager.shared.addMistake(
+                    original: original,
+                    correction: correction,
+                    explanation: explanation
+                )
+                AppLogger.network.info("Found and saved mistake: \(original) -> \(correction)")
+            }
+        }
+        
+        // 2. Parse New Words [WORD: word | translation]
+        let wordRegex = try? NSRegularExpression(pattern: #"\[WORD:\s*(.*?)\s*\|\s*(.*?)\s*\]"#, options: [])
+        wordRegex?.enumerateMatches(in: text, options: [], range: fullRange) { match, _, _ in
+            guard let match = match, match.numberOfRanges == 3 else { return }
+            
+            if let wordRange = Range(match.range(at: 1), in: text) {
+                let word = String(text[wordRange])
+                LearnerProfileManager.shared.updateWord(word: word, wasSuccessful: true)
+                AppLogger.network.info("Found and saved word mastery: \(word)")
+            }
+        }
+        
+        // 3. Parse Long-term Memory [MEMORY: fact]
+        let memoryRegex = try? NSRegularExpression(pattern: #"\[MEMORY:\s*(.*?)\s*\]"#, options: [])
+        memoryRegex?.enumerateMatches(in: text, options: [], range: fullRange) { match, _, _ in
+            guard let match = match, match.numberOfRanges == 2 else { return }
+            if let range = Range(match.range(at: 1), in: text) {
+                let fact = String(text[range])
+                LearnerProfileManager.shared.addLongTermFact(fact)
+                AppLogger.network.info("Found and saved long-term fact: \(fact)")
+            }
+        }
+        
+        // 4. Parse Session Summary [SESSION_SUMMARY: summary]
+        let summaryRegex = try? NSRegularExpression(pattern: #"\[SESSION_SUMMARY:\s*(.*?)\s*\]"#, options: [])
+        summaryRegex?.enumerateMatches(in: text, options: [], range: fullRange) { match, _, _ in
+            guard let match = match, match.numberOfRanges == 2 else { return }
+            if let range = Range(match.range(at: 1), in: text) {
+                let summary = String(text[range])
+                // Save it immediately as the latest lesson summary
+                LearnerProfileManager.shared.addSessionSummary(topic: "Практика", summary: summary, successRate: 0.8)
+                AppLogger.network.info("Found and saved session summary: \(summary)")
             }
         }
     }

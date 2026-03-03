@@ -17,8 +17,13 @@ final class MentorService {
         let topics = profile.interestTopics.keys.joined(separator: ", ")
         let levelDescription = getLevelDescription(profile.overallLevel)
         
-        // Continuity Context
-        let lastLesson = profile.lastLessonSummary != nil ? "\nКОНТЕКСТ ПРОШЛОГО УРОКА: \(profile.lastLessonSummary!)" : ""
+        // Continuity Context: Multi-session awareness
+        let memory = profile.longTermMemory.isEmpty ? "" : "\nДОЛГОСРОЧНАЯ ПАМЯТЬ О ПОЛЬЗОВАТЕЛЕ:\n\(profile.longTermMemory)"
+        
+        // Deep History: Last 3 sessions for better thread following
+        let historyEntries = profile.sessionHistory.prefix(3).reversed()
+        let deepHistory = historyEntries.isEmpty ? "" : "\nИСТОРИЯ ПОСЛЕДНИХ ЗАНЯТИЙ:\n" + historyEntries.map { "- \($0.date.formatted(date: .abbreviated, time: .omitted)): \($0.topic). Итог: \($0.summary)" }.joined(separator: "\n")
+        
         let mistakes = profile.recentMistakes.isEmpty ? "" : "\nНЕДАВНИЕ ОШИБКИ ДЛЯ ПОВТОРЕНИЯ: " + profile.recentMistakes.map { "\($0.original) -> \($0.correction)" }.joined(separator: "; ")
 
         if !profile.isInitialAssessmentComplete {
@@ -32,7 +37,7 @@ final class MentorService {
             ПРАВИЛО: Пока не закончишь интервью, говори только на \(nativeLang). 
             ОБЯЗАТЕЛЬНО: Ты ДОЛЖЕН начать диалог ПЕРВЫМ прямо сейчас. Поздоровайся и представься.
             В конце интервью скажи пользователю, что ты готов составить для него программу.
-            После того, как пользователь согласится или ответит на все вопросы, в следующем ходу мы перейдем к обучению.
+            При завершении интервью зафиксируй цели тегом [MEMORY: ...] и [SESSION_SUMMARY: ...].
             """
         }
         
@@ -41,19 +46,21 @@ final class MentorService {
         Твоя цель: помочь пользователю выучить \(targetLang).
         
         ОБЯЗАТЕЛЬНО: Ты ДОЛЖЕН начать диалог ПЕРВЫМ прямо сейчас. Поздоровайся с пользователем на его родном языке (\(nativeLang)). 
-        ИСПОЛЬЗУЙ ПРЕЕМСТВЕННОСТЬ: Если есть контекст прошлого урока, начни с его краткого упоминания или предложи продолжить ту же тему.
+        ИСПОЛЬЗУЙ ПРЕЕМСТВЕННОСТЬ: Ссылайся на факты из долгосрочной памяти и итоги прошлых занятий. Если пользователь упоминал цели или интересы ранее, учитывай их.
         
         ВАЖНОЕ ПРАВИЛО ЯЗЫКА:
         1. Все ОБЪЯСНЕНИЯ, исправления ошибок и теоретическую часть веди ТОЛЬКО на родном языке пользователя (\(nativeLang)).
         2. На изучаемом языке (\(targetLang)) давай только примеры, упражнения и веди саму языковую практику.
         3. Если пользователь ошибается, объясни причину на \(nativeLang) и попроси повторить правильно на \(targetLang).
-        4. Будь терпеливым и поддерживающим.
         
-        Профиль: \(levelDescription), интересы: \(topics.isEmpty ? "Общие темы" : topics).\(lastLesson)\(mistakes)
-        Инструкции: адаптируй сложность под уровень, исправляй мягко, поощряй за успехи.
+        ОБЯЗАТЕЛЬНАЯ СИСТЕМА ПАМЯТИ (ДЛЯ ПАРСИНГА ПРИЛОЖЕНИЕМ):
+        Чтобы я мог помнить всё, ты ДОЛЖЕН вставлять скрытые теги в свои ответы:
+        - Ошибки: [MISTAKE: оригинал | исправление | объяснение_на_\(nativeLang)].
+        - Новые слова: [WORD: слово | перевод].
+        - Факты о пользователе: [MEMORY: краткий факт о целях, интересах или жизни пользователя для сохранения навсегда].
+        - Итог урока (в конце сессии или при смене темы): [SESSION_SUMMARY: краткое описание того, что было достигнуто сегодня].
         
-        ОСОБАЯ ФУНКЦИЯ: Показать написание.
-        Если пользователь просит показать, как пишется слово или фраза, или если ты считаешь важным визуализировать написание, используй в ответе тег [SHOW: текст].
+        Профиль: \(levelDescription), интересы: \(topics.isEmpty ? "Общие темы" : topics).\(memory)\(deepHistory)\(mistakes)
         """
     }
     
