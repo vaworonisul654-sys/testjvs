@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -141,23 +142,39 @@ class MentorScreen extends StatelessWidget {
       child: Column(
         children: [
           if (provider.currentResponse.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.04),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.white.withOpacity(0.12)),
+                    gradient: LinearGradient(
+                      colors: [Colors.white.withOpacity(0.05), Colors.white.withOpacity(0.01)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Text(
+                    provider.currentResponse,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.95),
+                      fontSize: 18, 
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
               ),
-              child: Text(
-                provider.currentResponse,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500),
-              ),
-            ).animate().fadeIn().moveY(begin: 20, end: 0)
+            ).animate().fadeIn(duration: 400.ms).moveY(begin: 20, end: 0, curve: Curves.easeOutCubic)
           else
             Text(
               provider.state == MentorState.idle ? "Нажмите на ядро, чтобы начать урок" : "Подключение к ядру...",
-              style: TextStyle(color: Colors.white.withOpacity(0.3)),
+              style: TextStyle(color: Colors.white.withOpacity(0.3), letterSpacing: 0.5),
             ),
         ],
       ),

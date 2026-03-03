@@ -35,7 +35,12 @@ class GeminiService {
   }
 
   void _handleMessage(dynamic message) {
-    // Parse response for [MISTAKE:], [WORD:], [MEMORY:], [SESSION_SUMMARY:] tags
+    // In a real implementation, we would parse the JSON from Gemini Bidi stream
+    // For now, we simulate the text extraction for the Mentor
+    if (message is String) {
+      // Simplified: if message contains text, emit it
+      _textController.add(message); 
+    }
   }
 
   void endSession() {

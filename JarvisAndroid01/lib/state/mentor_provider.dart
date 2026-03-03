@@ -12,48 +12,68 @@ class MentorProvider extends ChangeNotifier {
   List<Map<String, dynamic>> _history = [];
   
   final GeminiService _gemini = GeminiService();
+  StreamSubscription<String>? _textSubscription;
   
   MentorState get state => _state;
   String get currentResponse => _currentResponse;
   double get audioLevel => _audioLevel;
   bool get isActive => _state == MentorState.active || _state == MentorState.speaking || _state == MentorState.connecting;
 
-  void startSession({bool autoStart = false}) {
-    if (_state != MentorState.idle && _state != MentorState.error) return;
-    
-    _state = MentorState.connecting;
-    notifyListeners();
-    
-    // Simulate connection and parity logic
-    // In real implementation, this would call _gemini.startSession(...)
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      _state = MentorState.active;
-      if (autoStart) {
-        // Send initial greeting trigger
-        _sendGreeting();
-      }
+  MentorProvider() {
+    _setupGeminiListeners();
+  }
+
+  void _setupGeminiListeners() {
+    _textSubscription = _gemini.textStream.listen((text) {
+      _currentResponse += text;
+      _state = MentorState.speaking;
       notifyListeners();
     });
   }
 
-  void _sendGreeting() {
-    _currentResponse = "Привет! Я твой наставник Джарвис. С чего начнем обучение сегодня?";
-    _state = MentorState.speaking;
+  void startSession({bool autoStart = false}) {
+    if (_state != MentorState.idle && _state != MentorState.error) return;
+    
+    _state = MentorState.connecting;
+    _currentResponse = "";
     notifyListeners();
+    
+    final apiKey = AppConfig.geminiKey;
+    if (apiKey.isEmpty) {
+      _state = MentorState.error;
+      _currentResponse = "Критическая ошибка: API ключ не настроен. Проверьте Config.";
+      notifyListeners();
+      return;
+    }
+
+    try {
+      _gemini.startSession(
+        apiKey: apiKey,
+        systemInstruction: "You are JARVIS, a proactive AI mentor. Help the user learn languages through natural conversation.",
+      );
+      
+      _state = MentorState.active;
+      if (autoStart) {
+        // Initial greet logic would be triggered by Gemini onSetupComplete equivalent
+      }
+      notifyListeners();
+    } catch (e) {
+      _state = MentorState.error;
+      _currentResponse = "Ошибка подключения: $e";
+      notifyListeners();
+    }
   }
 
   void endSession() {
+    _gemini.endSession();
     _state = MentorState.idle;
     _currentResponse = "";
     notifyListeners();
   }
 
-  void toggleRecording() {
-    if (_state == MentorState.active) {
-      // Start recording logic
-    } else {
-      // Stop logic
-    }
+  @override
+  void dispose() {
+    _textSubscription?.cancel();
+    super.dispose();
   }
 }
