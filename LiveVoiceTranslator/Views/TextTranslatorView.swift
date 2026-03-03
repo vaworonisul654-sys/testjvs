@@ -122,7 +122,7 @@ struct TextTranslatorView: View {
                 .foregroundStyle(.white.opacity(0.9))
                 .lineLimit(3...8)
                 .focused($isInputFocused)
-                .tint(emerald)
+                .tint(DesignSystem.Colors.emerald)
         }
         .padding(14)
         .frame(minHeight: 180, maxHeight: .infinity, alignment: .top)
@@ -144,7 +144,11 @@ struct TextTranslatorView: View {
                     .foregroundStyle(.white.opacity(0.4))
                 Spacer()
 
+                if viewModel.isTranslating {
+                    ProgressView()
+                        .scaleEffect(0.7)
                         .tint(DesignSystem.Colors.emerald)
+                }
 
                 if !viewModel.translatedText.isEmpty {
                     Button(action: viewModel.copyTranslation) {
