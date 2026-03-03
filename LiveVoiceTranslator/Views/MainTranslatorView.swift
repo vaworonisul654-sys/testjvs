@@ -34,7 +34,7 @@ struct MainTranslatorView: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, Constants.UI.horizontalMargin)
                 }
                 .padding(.top, 12)
 
@@ -45,13 +45,13 @@ struct MainTranslatorView: View {
                 // Warnings / errors
                 if !viewModel.isAPIKeyConfigured {
                     apiKeyBanner
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, Constants.UI.horizontalMargin)
                         .padding(.top, 10)
                 }
 
                 if case .error(let msg) = viewModel.state {
                     errorBanner(msg)
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, Constants.UI.horizontalMargin)
                         .padding(.top, 8)
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
@@ -62,7 +62,7 @@ struct MainTranslatorView: View {
                 // Live card
                 if viewModel.state.isActive || !viewModel.currentTranslation.isEmpty {
                     liveTranslationCard
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, Constants.UI.horizontalMargin)
                         .padding(.bottom, 10)
                         .transition(.asymmetric(
                             insertion: .scale(scale: 0.9).combined(with: .opacity),
@@ -211,7 +211,7 @@ struct MainTranslatorView: View {
                 label: "НА"
             )
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, Constants.UI.horizontalMargin)
         .padding(.vertical, 8)
     }
 
@@ -249,7 +249,7 @@ struct MainTranslatorView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, Constants.UI.horizontalMargin)
                 .padding(.vertical, 16)
             }
             .scrollIndicators(.hidden)

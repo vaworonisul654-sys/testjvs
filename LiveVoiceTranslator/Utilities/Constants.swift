@@ -8,6 +8,7 @@ enum Constants {
         static let premiumRadius: CGFloat = 24
         static let smallCornerRadius: CGFloat = 12
         static let padding: CGFloat = 16
+        static let horizontalMargin: CGFloat = 12
         static let smallPadding: CGFloat = 8
         static let recordButtonSize: CGFloat = 80
         static let animationDuration: Double = 0.3
@@ -63,7 +64,22 @@ struct GlassCardModifier: ViewModifier {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(borderColor, lineWidth: 1)
+                    .stroke(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(0.2),
+                                .white.opacity(0.05),
+                                borderColor.opacity(0.1)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(borderColor.opacity(0.5), lineWidth: 0.5)
             )
     }
 }

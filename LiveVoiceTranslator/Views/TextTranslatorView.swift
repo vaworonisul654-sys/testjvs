@@ -25,22 +25,21 @@ struct TextTranslatorView: View {
                     .padding(.top, 16)
                     .padding(.bottom, 10)
 
-                // Language selector
                 languageSelector
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, Constants.UI.horizontalMargin)
                     .padding(.bottom, 12)
 
                 // API key warning
                 if !viewModel.isAPIKeyConfigured {
                     apiKeyBanner
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, Constants.UI.horizontalMargin)
                         .padding(.bottom, 8)
                 }
 
                 // Error
                 if let error = viewModel.errorMessage {
                     errorBanner(error)
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, Constants.UI.horizontalMargin)
                         .padding(.bottom, 8)
                 }
 
@@ -51,7 +50,7 @@ struct TextTranslatorView: View {
                     // Output panel
                     outputPanel
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, Constants.UI.horizontalMargin)
 
                 Spacer()
 

@@ -37,7 +37,7 @@ struct MentorView: View {
                         }
                         .foregroundStyle(DesignSystem.Colors.emerald)
                         .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, Constants.UI.horizontalMargin)
                         .glassCard(cornerRadius: 12)
                     }
                     
