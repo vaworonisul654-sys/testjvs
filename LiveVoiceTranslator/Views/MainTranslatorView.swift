@@ -242,6 +242,33 @@ struct MainTranslatorView: View {
 
     // MARK: - Translation Area
 
+    private var translationArea: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    if viewModel.messages.isEmpty && !viewModel.state.isActive {
+                        emptyState
+                    } else {
+                        ForEach(viewModel.messages) { message in
+                            ChatBubbleView(message: message)
+                                .id(message.id)
+                        }
+                    }
+                }
+                .padding(.horizontal, Constants.UI.horizontalMargin)
+                .padding(.vertical, 16)
+            }
+            .scrollIndicators(.hidden)
+            .onChange(of: viewModel.messages.count) { _, _ in
+                if let first = viewModel.messages.first {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        proxy.scrollTo(first.id, anchor: .top)
+                    }
+                }
+            }
+        }
+    }
+
     private var emptyState: some View {
         VStack(spacing: 24) {
             Spacer().frame(height: 40)

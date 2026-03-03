@@ -66,23 +66,20 @@ struct RootTabView: View {
             tabButton(tab: .photo, icon: "camera", label: "Фото")
             tabButton(tab: .memory, icon: "cpu", label: "Память")
         }
-        .padding(.horizontal, 8)
-        .padding(.top, 10)
-        .padding(.bottom, 34) // Typical home indicator height
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 12)
         .background(
             ZStack {
                 Color.black.opacity(0.4)
-                BlurView(style: .systemUltraThinMaterialDark)
+                Rectangle()
+                    .fill(.ultraThinMaterial)
             }
-            .ignoresSafeArea(edges: .bottom)
+            .clipShape(Capsule(style: .continuous))
+            .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
         )
-        .overlay(
-            VStack {
-                Divider()
-                    .background(Color.white.opacity(0.1))
-                Spacer()
-            }
-        )
+        .padding(.horizontal, 10)
+        .padding(.bottom, 8)
     }
 
     private var jarvisCoreButton: some View {
