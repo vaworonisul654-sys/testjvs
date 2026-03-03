@@ -28,7 +28,7 @@ jobs:
           cache: true
 
       - name: Install Dependencies
-        working-directory: JarvisAndroid
+        working-directory: JarvisAndroid01
         run: |
           mkdir -p lib/config
           # Создание мок-файла секретов для успешной компиляции
@@ -38,7 +38,7 @@ jobs:
           flutter pub get
 
       - name: Build Release APK
-        working-directory: JarvisAndroid
+        working-directory: JarvisAndroid01
         run: |
           chmod +x android/gradlew
           flutter build apk --release --no-pub --dart-define=IS_CI=true
@@ -47,5 +47,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jarvis-android-release
-          path: JarvisAndroid/build/app/outputs/flutter-apk/app-release.apk
+          path: JarvisAndroid01/build/app/outputs/flutter-apk/app-release.apk
           retention-days: 7

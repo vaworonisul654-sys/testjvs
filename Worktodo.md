@@ -5,10 +5,10 @@
 | Priority | ID | Task | Status | Role |
 |----------|----|------|--------|------|
 | **HIGH** | #001 | Финализация системы команд (папка `agent/commands/`) | `FIXED` | `[ARCH]` |
-| **HIGH** | #006 | Настройка и отладка GitHub Actions для сборки APK | `FIXED` | `[BUILD]` |
+| **HIGH** | #006 | Перевод GitHub Actions на `JarvisAndroid01` | `FIXED` | `[BUILD]` |
 | **HIGH** | #007 | Увеличение громкости перевода на iOS ([CORE]) | `FIXED` | `[CORE]` |
-| **HIGH** | #002 | Проверка Android release сборки в чистом ASCII пути | `OPEN` | `[BUILD]` |
-| **MEDIUM** | #003 | Внедрение Glassmorphism стилей в `MemoryScreen` | `OPEN` | `[UI]` |
+| **HIGH** | #002 | Запуск Android приложения на GitHub (CI/CD) | `IN_PROGRESS` | `[BUILD]` |
+| **MEDIUM** | #003 | Внедрение Glassmorphism стилей в `MemoryScreen` | `DEFERRED` | `[UI]` |
 | **MEDIUM** | #004 | Оптимизация задержки в `MentorService` (AsyncStream) | `OPEN` | `[CORE]` |
 | **LOW** | #005 | Обновление `README.md` описанием новой системы команд | `OPEN` | `[BUILD]` |
 
