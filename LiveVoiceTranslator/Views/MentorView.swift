@@ -24,25 +24,38 @@ struct MentorView: View {
                             .font(.system(size: 24))
                             .foregroundStyle(.white.opacity(0.3))
                     }
+                    
                     Spacer()
-                    Text("JARVIS CORE")
-                        .font(.system(size: 14, weight: .black))
-                        .kerning(2)
-                        .foregroundStyle(DesignSystem.Colors.emerald)
-                    Spacer()
+                    
+                    // Central Results Button
                     Button(action: { viewModel.isDashboardPresented = true }) {
-                        VStack(spacing: 2) {
+                        HStack(spacing: 8) {
                             Image(systemName: "chart.bar.fill")
-                                .font(.system(size: 18))
+                                .font(.system(size: 14))
                             Text("ИТОГИ")
-                                .font(.system(size: 8, weight: .bold))
+                                .font(.system(size: 12, weight: .bold))
                         }
                         .foregroundStyle(DesignSystem.Colors.emerald)
-                        .padding(8)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 16)
                         .glassCard(cornerRadius: 12)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: {}) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(.white.opacity(0.3))
                     }
                 }
                 .padding(.horizontal)
+                
+                Text("JARVIS CORE")
+                    .font(.system(size: 10, weight: .black))
+                    .kerning(2)
+                    .foregroundStyle(DesignSystem.Colors.emerald.opacity(0.5))
+                    .padding(.top, -16)
                 
                 Spacer()
                 
