@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Text translation screen — emerald glassmorphism design
 struct TextTranslatorView: View {
+    @State private var viewModel = TextTranslatorViewModel()
     @FocusState private var isInputFocused: Bool
 
     var body: some View {
@@ -11,7 +12,7 @@ struct TextTranslatorView: View {
 
             // Subtle emerald glow
             Circle()
-                .fill(emerald.opacity(0.03))
+                .fill(DesignSystem.Colors.emerald.opacity(0.03))
                 .frame(width: 400, height: 400)
                 .offset(y: -100)
                 .blur(radius: 80)
@@ -143,17 +144,13 @@ struct TextTranslatorView: View {
                     .foregroundStyle(.white.opacity(0.4))
                 Spacer()
 
-                if viewModel.isTranslating {
-                    ProgressView()
-                        .scaleEffect(0.7)
-                        .tint(emerald)
-                }
+                        .tint(DesignSystem.Colors.emerald)
 
                 if !viewModel.translatedText.isEmpty {
                     Button(action: viewModel.copyTranslation) {
                         Image(systemName: "doc.on.doc")
                             .font(.system(size: 14))
-                            .foregroundStyle(emerald.opacity(0.6))
+                            .foregroundStyle(DesignSystem.Colors.emerald.opacity(0.6))
                     }
                 }
             }
