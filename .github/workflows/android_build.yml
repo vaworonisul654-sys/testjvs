@@ -20,24 +20,19 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: '3.41.2'
           channel: 'stable'
 
       - name: Get dependencies
         run: |
           cd JarvisAndroid
-          mkdir -p lib/config
-          # Create dummy secrets if they don't exist (needed for compilation)
-          if [ ! -f lib/config/secrets.dart ]; then
-            echo 'class Secrets { static const String geminiKey = ""; static const String openAIKey = ""; }' > lib/config/secrets.dart
-          fi
           flutter pub get
 
       - name: Build APK
         run: |
           cd JarvisAndroid
           chmod +x android/gradlew
-          flutter build apk --release -v
+          flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
