@@ -10,6 +10,7 @@ final class MentorViewModel {
     var currentResponse: String = ""
     var sessionHistory: [MentorMessage] = []
     var isAutoStarting: Bool = false
+    var isDashboardPresented: Bool = false
     
     // Services
     private let geminiService = GeminiLiveService()
@@ -48,22 +49,20 @@ final class MentorViewModel {
         currentResponse = ""
         isAutoStarting = autoStart
         
-        // Use the personalized instruction from MentorService
-        let instruction = mentorService.getSystemInstruction()
-        
-        // Start Gemini Session with mentor context
-        geminiService.startSession(
-            sourceLanguage: AppSettings.shared.nativeLanguage,
-            targetLanguage: AppSettings.shared.learnerTargetLanguage,
-            customSystemInstruction: instruction
-        )
-        
+        // 1. Proactive Audio Capture (Zero Delay)
+        // Start capturing even before WS is ready to buffer audio locally
         Task {
             do {
                 let audioStream = try audioCaptureService.startCapture()
-                state = .active
                 
-                // Keep screen awake
+                // 2. Start Gemini Session
+                let instruction = mentorService.getSystemInstruction()
+                geminiService.startSession(
+                    sourceLanguage: AppSettings.shared.nativeLanguage,
+                    targetLanguage: AppSettings.shared.learnerTargetLanguage,
+                    customSystemInstruction: instruction
+                )
+                
                 UIApplication.shared.isIdleTimerDisabled = true
                 
                 audioStreamTask = Task {
@@ -74,10 +73,11 @@ final class MentorViewModel {
                             self.audioLevel = self.audioCaptureService.currentLevel
                         }
                         
-                        // Prevent feedback loop
-                        guard !self.ttsService.isSpeaking else { continue }
-                        
-                        self.geminiService.sendAudioChunk(chunk)
+                        // Buffer or send if ready
+                        if geminiService.isSessionActive {
+                            guard !self.ttsService.isSpeaking else { continue }
+                            self.geminiService.sendAudioChunk(chunk)
+                        }
                     }
                 }
             } catch {

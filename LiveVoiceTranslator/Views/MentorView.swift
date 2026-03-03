@@ -28,12 +28,18 @@ struct MentorView: View {
                     Text("JARVIS CORE")
                         .font(.system(size: 14, weight: .black))
                         .kerning(2)
-                        .foregroundStyle(emerald)
+                        .foregroundStyle(DesignSystem.Colors.emerald)
                     Spacer()
-                    Button(action: {}) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.system(size: 20))
-                            .foregroundStyle(.white.opacity(0.3))
+                    Button(action: { viewModel.isDashboardPresented = true }) {
+                        VStack(spacing: 2) {
+                            Image(systemName: "chart.bar.fill")
+                                .font(.system(size: 18))
+                            Text("ИТОГИ")
+                                .font(.system(size: 8, weight: .bold))
+                        }
+                        .foregroundStyle(DesignSystem.Colors.emerald)
+                        .padding(8)
+                        .glassCard(cornerRadius: 12)
                     }
                 }
                 .padding(.horizontal)
@@ -70,7 +76,7 @@ struct MentorView: View {
                 if case .active = viewModel.state {
                     Text("Я слушаю вас...")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(emerald)
+                        .foregroundStyle(DesignSystem.Colors.emerald)
                         .padding(.bottom, 40)
                 } else if case .speaking = viewModel.state {
                     Text("Джарвис говорит")
@@ -88,6 +94,9 @@ struct MentorView: View {
         }
         .onDisappear {
             viewModel.endSession()
+        }
+        .sheet(isPresented: $viewModel.isDashboardPresented) {
+            MentorDashboardView()
         }
     }
     

@@ -231,9 +231,9 @@ struct MentorDashboardView: View {
     private var summaryHeader: some View {
         HStack(spacing: 20) {
             VStack(alignment: .leading, spacing: 4) {
-                Text("УРОВЕНЬ")
+                Text("LEVEL")
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(emerald)
+                    .foregroundStyle(DesignSystem.Colors.emerald)
                     .tracking(2)
                 
                 Text(getLevelText(profile.overallLevel))
@@ -320,7 +320,7 @@ struct MentorDashboardView: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("РАБОТА НАД ОШИБКАМИ")
                 .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(emerald)
+                .foregroundStyle(DesignSystem.Colors.emerald)
                 .tracking(2)
             
             ForEach(profile.recentMistakes) { mistake in
@@ -335,7 +335,7 @@ struct MentorDashboardView: View {
                     
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(emerald)
+                            .foregroundStyle(DesignSystem.Colors.emerald)
                         Text(mistake.correction)
                             .fontWeight(.bold)
                             .foregroundStyle(.white)
@@ -357,11 +357,11 @@ struct MentorDashboardView: View {
     
     private var glassBackground: some View {
         RoundedRectangle(cornerRadius: 24)
-            .fill(.white.opacity(0.03))
+            .fill(DesignSystem.Colors.glassWhite)
             .background(.ultraThinMaterial.opacity(0.1))
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
-                    .stroke(.white.opacity(0.05), lineWidth: 1)
+                    .stroke(DesignSystem.Colors.glassBorder, lineWidth: 1)
             )
     }
     

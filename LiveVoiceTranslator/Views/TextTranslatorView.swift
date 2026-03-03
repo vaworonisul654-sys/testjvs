@@ -80,16 +80,16 @@ struct TextTranslatorView: View {
             Button(action: viewModel.swapLanguages) {
                 ZStack {
                     Circle()
-                        .fill(emerald.opacity(0.12))
+                        .fill(DesignSystem.Colors.emerald.opacity(0.12))
                         .frame(width: 36, height: 36)
                         .overlay(
                             Circle()
-                                .stroke(emerald.opacity(0.25), lineWidth: 1)
+                                .stroke(DesignSystem.Colors.emerald.opacity(0.25), lineWidth: 1)
                         )
 
                     Image(systemName: "arrow.left.arrow.right")
                         .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(emerald)
+                        .foregroundStyle(DesignSystem.Colors.emerald)
                 }
             }
 
