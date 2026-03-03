@@ -6,6 +6,7 @@ class LearnerProfile {
   Map<String, double> interestTopics = {};
   List<Mistake> recentMistakes = [];
   List<SessionSummary> sessionHistory = [];
+  List<String> learnedVocabulary = [];
   String longTermMemory = "";
   bool isInitialAssessmentComplete = false;
 

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/gemini_service.dart';
 import '../models/learner_profile.dart';
@@ -13,14 +14,30 @@ class MentorProvider extends ChangeNotifier {
   
   final GeminiService _gemini = GeminiService();
   StreamSubscription<String>? _textSubscription;
+  final LearnerProfile _profile = LearnerProfile();
   
   MentorState get state => _state;
   String get currentResponse => _currentResponse;
+  String get transcript => _currentResponse; // For UI parity
   double get audioLevel => _audioLevel;
   bool get isActive => _state == MentorState.active || _state == MentorState.speaking || _state == MentorState.connecting;
+  bool get isRecording => _state == MentorState.active; // Simplified for UI
+  
+  LearnerProfile get profile => _profile;
+  String get currentStatus => _state.name;
 
   MentorProvider() {
     _setupGeminiListeners();
+  }
+
+  void toggleRecording() {
+    if (isRecording) {
+      _state = MentorState.active; // Or however Gemini handles "not recording"
+      // _gemini.stopRecording();
+    } else {
+      startSession();
+    }
+    notifyListeners();
   }
 
   void _setupGeminiListeners() {

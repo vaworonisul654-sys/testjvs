@@ -20,7 +20,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.jarvis_voice_system"
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = 35
         multiDexEnabled = true
         versionCode = 1

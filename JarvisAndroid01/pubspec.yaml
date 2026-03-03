@@ -16,7 +16,7 @@ dependencies:
   flutter_animate: ^4.5.0
   avatar_glow: ^3.0.1
   web_socket_channel: ^2.4.3
-  record: ^5.0.4
+  record: ^5.1.0
   audioplayers: ^5.2.1
   flutter_sound: ^9.2.13
   path_provider: ^2.1.2
@@ -24,8 +24,12 @@ dependencies:
   permission_handler: ^11.3.1
   # OpenAI/Gemini support via HTTP/WS
   http: ^1.1.0
-  camera: ^0.11.0+2
+  camera: 0.10.5+9
   path: ^1.9.0
+
+dependency_overrides:
+  record_platform_interface: 1.2.0
+  record_linux: 0.7.1
 
 dev_dependencies:
   flutter_test:
