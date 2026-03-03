@@ -68,23 +68,20 @@ struct RootTabView: View {
         }
         .padding(.horizontal, 8)
         .padding(.top, 10)
-        .padding(.bottom, 26)
+        .padding(.bottom, 34) // Typical home indicator height
         .background(
-            Rectangle()
-                .fill(bgColor.opacity(0.95))
-                .background(.ultraThinMaterial.opacity(0.5))
-                .overlay(
-                    Rectangle()
-                        .fill(
-                            LinearGradient(
-                                colors: [emerald.opacity(0.06), Color.clear],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(height: 1),
-                    alignment: .top
-                )
+            ZStack {
+                Color.black.opacity(0.4)
+                BlurView(style: .systemUltraThinMaterialDark)
+            }
+            .ignoresSafeArea(edges: .bottom)
+        )
+        .overlay(
+            VStack {
+                Divider()
+                    .background(Color.white.opacity(0.1))
+                Spacer()
+            }
         )
     }
 

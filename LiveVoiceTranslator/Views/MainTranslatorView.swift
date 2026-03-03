@@ -56,9 +56,6 @@ struct MainTranslatorView: View {
                         .transition(.move(edge: .top).combined(with: .opacity))
                 }
 
-                // Chat area
-                translationArea
-
                 // Live card
                 if viewModel.state.isActive || !viewModel.currentTranslation.isEmpty {
                     liveTranslationCard
@@ -70,9 +67,18 @@ struct MainTranslatorView: View {
                         ))
                 }
 
-                // 3D Orb button
-                recordSection
-                    .padding(.bottom, 90)
+                // Chat area + Orb
+                ZStack(alignment: .bottom) {
+                    translationArea
+                    
+                    if !viewModel.state.isActive && viewModel.messages.isEmpty {
+                        // Orb is placed inside empty state via translationArea
+                    } else {
+                        // Floating orb when active or has messages
+                        recordSection
+                            .padding(.bottom, 30)
+                    }
+                }
             }
         }
         .sheet(isPresented: $showSettings) {
@@ -236,70 +242,14 @@ struct MainTranslatorView: View {
 
     // MARK: - Translation Area
 
-    private var translationArea: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    if viewModel.messages.isEmpty && !viewModel.state.isActive {
-                        emptyState
-                    } else {
-                        ForEach(viewModel.messages) { message in
-                            ChatBubbleView(message: message)
-                                .id(message.id)
-                        }
-                    }
-                }
-                .padding(.horizontal, Constants.UI.horizontalMargin)
-                .padding(.vertical, 16)
-            }
-            .scrollIndicators(.hidden)
-            .onChange(of: viewModel.messages.count) { _, _ in
-                if let first = viewModel.messages.first {
-                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                        proxy.scrollTo(first.id, anchor: .top)
-                    }
-                }
-            }
-        }
-    }
-
     private var emptyState: some View {
         VStack(spacing: 24) {
-            Spacer().frame(height: 50)
+            Spacer().frame(height: 40)
 
-            // Emerald orb icon
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color(red: 0, green: 0.88, blue: 0.56).opacity(0.15),
-                                Color(red: 0, green: 0.88, blue: 0.56).opacity(0.05),
-                                Color.clear
-                            ],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 80
-                        )
-                    )
-                    .frame(width: 160, height: 160)
-
-                Image(systemName: "waveform.circle.fill")
-                    .font(.system(size: 64))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [
-                                Color(red: 0, green: 0.88, blue: 0.56),
-                                Color(red: 0, green: 0.76, blue: 0.66),
-                                .white.opacity(0.9)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .shadow(color: Color(red: 0, green: 0.88, blue: 0.56).opacity(0.5), radius: 15)
-                    .symbolEffect(.pulse.byLayer, options: .repeating)
-            }
+            // 3D Orb Moved ABOVE the text as requested
+            recordSection
+                .scaleEffect(1.2) // Make it look like a prominent Orb
+                .padding(.bottom, 10)
 
             VStack(spacing: 8) {
                 Text("Начните перевод")
