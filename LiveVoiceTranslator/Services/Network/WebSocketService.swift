@@ -103,6 +103,15 @@ final class WebSocketService: NSObject, @unchecked Sendable {
                 self.startListening()
 
             case .failure(let error):
+                let nsError = error as NSError
+                // Ignore "Socket is not connected" (POSIX 57) or cancellation errors during intentional disconnect
+                if nsError.domain == NSPOSIXErrorDomain && nsError.code == 57 {
+                    return 
+                }
+                if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+                    return
+                }
+
                 AppLogger.network.error("WebSocket receive error: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     self.isConnected = false
@@ -116,8 +125,9 @@ final class WebSocketService: NSObject, @unchecked Sendable {
         DispatchQueue.main.async {
             self.pingTimer?.invalidate()
             self.pingTimer = Timer.scheduledTimer(withTimeInterval: self.pingInterval, repeats: true) { [weak self] _ in
-                self?.webSocketTask?.sendPing { error in
-                    if let error {
+                guard let self, self.isConnected else { return }
+                self.webSocketTask?.sendPing { error in
+                    if let error, self.isConnected {
                         AppLogger.network.warning("Ping failed: \(error.localizedDescription)")
                     }
                 }

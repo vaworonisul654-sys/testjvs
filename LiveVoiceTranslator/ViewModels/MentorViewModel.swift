@@ -11,6 +11,7 @@ final class MentorViewModel {
     var sessionHistory: [MentorMessage] = []
     var isAutoStarting: Bool = false
     var isDashboardPresented: Bool = false
+    private var wasSummarySavedInSession: Bool = false
     
     // Services
     private let geminiService = GeminiLiveService()
@@ -48,6 +49,7 @@ final class MentorViewModel {
         state = .connecting
         currentResponse = ""
         isAutoStarting = autoStart
+        wasSummarySavedInSession = false // Reset at start of new session
         
         // 1. Proactive Audio Capture (Zero Delay)
         // Start capturing even before WS is ready to buffer audio locally
@@ -55,12 +57,18 @@ final class MentorViewModel {
             do {
                 let audioStream = try audioCaptureService.startCapture()
                 
-                // 2. Start Gemini Session
+                // 2. Extract History for context
+                let historyString = sessionHistory.prefix(10).reversed()
+                    .map { "\($0.isUser ? "Пользователь" : "Джарвис"): \($0.text)" }
+                    .joined(separator: "\n")
+                
+                // 3. Start Gemini Session
                 let instruction = mentorService.getSystemInstruction()
                 geminiService.startSession(
                     sourceLanguage: AppSettings.shared.nativeLanguage,
                     targetLanguage: AppSettings.shared.learnerTargetLanguage,
-                    customSystemInstruction: instruction
+                    customSystemInstruction: instruction,
+                    history: historyString
                 )
                 
                 UIApplication.shared.isIdleTimerDisabled = true
@@ -104,8 +112,12 @@ final class MentorViewModel {
     }
     
     private func finalizeAndSaveSession() {
-        // Create a summary from the last AI response and general history
-        // In a real app, you might send one last request to Gemini for a pro summary
+        // Only run fallback if no high-quality summary was parsed from tags during the entire session
+        if wasSummarySavedInSession {
+            AppLogger.network.info("Session already summarized via tags. Skipping fallback.")
+            return 
+        }
+
         let lastAIResponse = sessionHistory.first { !$0.isUser }?.text ?? ""
         let summary = lastAIResponse.prefix(200) + (lastAIResponse.count > 200 ? "..." : "")
         
@@ -142,16 +154,23 @@ final class MentorViewModel {
                 
                 // Clean text for UI
                 let cleanText = self.currentResponse
-                    .replacingOccurrences(of: #"\[MISTAKE:.*?\]"#, with: "", options: .regularExpression)
-                    .replacingOccurrences(of: #"\[WORD:.*?\]"#, with: "", options: .regularExpression)
-                    .replacingOccurrences(of: #"\[MEMORY:.*?\]"#, with: "", options: .regularExpression)
-                    .replacingOccurrences(of: #"\[SESSION_SUMMARY:.*?\]"#, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: #"\[MISTAKE\s*:[\s\S]*?\]"#, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: #"\[WORD\s*:[\s\S]*?\]"#, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: #"\[MEMORY\s*:[\s\S]*?\]"#, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: #"\[SESSION_SUMMARY\s*:[\s\S]*?\]"#, with: "", options: .regularExpression)
+                    .replacingOccurrences(of: #"\[PROGRAM_UPDATE\s*:[\s\S]*?\]"#, with: "", options: .regularExpression)
                     .trimmingCharacters(in: .whitespacesAndNewlines)
                 
                 self.sessionHistory.insert(MentorMessage(text: cleanText, isUser: false), at: 0)
                 self.currentResponse = ""
             }
             self.state = .active
+        }
+        
+        geminiService.onUserTranscription = { [weak self] text in
+            guard let self = self else { return }
+            // Add to UI history for the active session, but don't persist long-term
+            self.sessionHistory.insert(MentorMessage(text: text, isUser: true), at: 0)
         }
         
         geminiService.onError = { [weak self] error in
@@ -169,63 +188,73 @@ final class MentorViewModel {
     }
     
     private func parseAndProcessTags(_ text: String) {
-        // 1. Parse Mistakes [MISTAKE: original | correction | explanation]
-        let mistakeRegex = try? NSRegularExpression(pattern: #"\[MISTAKE:\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\]"#, options: [])
-        let fullRange = NSRange(text.startIndex..<text.endIndex, in: text)
+        let nsText = text as NSString
+        let fullRange = NSRange(location: 0, length: nsText.length)
+        let options: NSRegularExpression.Options = [.caseInsensitive]
         
+        // 1. Parse Mistakes [MISTAKE: original | correction | explanation]
+        let mistakeRegex = try? NSRegularExpression(pattern: #"\[MISTAKE\s*:\s*([\s\S]*?)\s*\|\s*([\s\S]*?)\s*\|\s*([\s\S]*?)\s*\]"#, options: options)
         mistakeRegex?.enumerateMatches(in: text, options: [], range: fullRange) { match, _, _ in
             guard let match = match, match.numberOfRanges == 4 else { return }
+            let original = nsText.substring(with: match.range(at: 1))
+            let correction = nsText.substring(with: match.range(at: 2))
+            let explanation = nsText.substring(with: match.range(at: 3))
             
-            if let originalRange = Range(match.range(at: 1), in: text),
-               let correctionRange = Range(match.range(at: 2), in: text),
-               let explanationRange = Range(match.range(at: 3), in: text) {
-                
-                let original = String(text[originalRange])
-                let correction = String(text[correctionRange])
-                let explanation = String(text[explanationRange])
-                
-                LearnerProfileManager.shared.addMistake(
-                    original: original,
-                    correction: correction,
-                    explanation: explanation
-                )
-                AppLogger.network.info("Found and saved mistake: \(original) -> \(correction)")
-            }
+            LearnerProfileManager.shared.addMistake(original: original, correction: correction, explanation: explanation)
         }
         
         // 2. Parse New Words [WORD: word | translation]
-        let wordRegex = try? NSRegularExpression(pattern: #"\[WORD:\s*(.*?)\s*\|\s*(.*?)\s*\]"#, options: [])
+        let wordRegex = try? NSRegularExpression(pattern: #"\[WORD\s*:\s*([\s\S]*?)\s*\|\s*([\s\S]*?)\s*\]"#, options: [])
         wordRegex?.enumerateMatches(in: text, options: [], range: fullRange) { match, _, _ in
             guard let match = match, match.numberOfRanges == 3 else { return }
-            
-            if let wordRange = Range(match.range(at: 1), in: text) {
-                let word = String(text[wordRange])
-                LearnerProfileManager.shared.updateWord(word: word, wasSuccessful: true)
-                AppLogger.network.info("Found and saved word mastery: \(word)")
-            }
+            let word = nsText.substring(with: match.range(at: 1))
+            LearnerProfileManager.shared.updateWord(word: word, wasSuccessful: true)
         }
         
         // 3. Parse Long-term Memory [MEMORY: fact]
-        let memoryRegex = try? NSRegularExpression(pattern: #"\[MEMORY:\s*(.*?)\s*\]"#, options: [])
+        let memoryRegex = try? NSRegularExpression(pattern: #"\[MEMORY\s*:\s*([\s\S]*?)\s*\]"#, options: [])
         memoryRegex?.enumerateMatches(in: text, options: [], range: fullRange) { match, _, _ in
             guard let match = match, match.numberOfRanges == 2 else { return }
-            if let range = Range(match.range(at: 1), in: text) {
-                let fact = String(text[range])
-                LearnerProfileManager.shared.addLongTermFact(fact)
-                AppLogger.network.info("Found and saved long-term fact: \(fact)")
-            }
+            let fact = nsText.substring(with: match.range(at: 1))
+            LearnerProfileManager.shared.addLongTermFact(fact)
         }
         
         // 4. Parse Session Summary [SESSION_SUMMARY: summary]
-        let summaryRegex = try? NSRegularExpression(pattern: #"\[SESSION_SUMMARY:\s*(.*?)\s*\]"#, options: [])
+        let summaryRegex = try? NSRegularExpression(pattern: #"\[SESSION_SUMMARY\s*:\s*([\s\S]*?)\s*\]"#, options: [])
         summaryRegex?.enumerateMatches(in: text, options: [], range: fullRange) { match, _, _ in
             guard let match = match, match.numberOfRanges == 2 else { return }
-            if let range = Range(match.range(at: 1), in: text) {
-                let summary = String(text[range])
-                // Save it immediately as the latest lesson summary
-                LearnerProfileManager.shared.addSessionSummary(topic: "Практика", summary: summary, successRate: 0.8)
-                AppLogger.network.info("Found and saved session summary: \(summary)")
+            let summary = nsText.substring(with: match.range(at: 1))
+            
+            // PROACTIVE SAVE: save immediately
+            LearnerProfileManager.shared.addSessionSummary(topic: "Практика", summary: summary, successRate: 0.8)
+            
+            // PEDAGOGICAL PROGRESS: Advance to next lesson after summary
+            LearnerProfileManager.shared.advanceLesson(topic: "Прошлый урок")
+            
+            // CRITICAL: Mark assessment as complete if this is the first summary
+            if !LearnerProfileManager.shared.currentProfile.isInitialAssessmentComplete {
+                LearnerProfileManager.shared.setAssessmentComplete()
+                AppLogger.network.info("Initial assessment marked as complete!")
             }
+            
+            LearnerProfileManager.shared.save() // Force persistence
+            self.wasSummarySavedInSession = true
+            AppLogger.network.info("Found and saved session summary: \(summary)")
+        }
+        
+        // 6. Parse Program Update [PROGRAM_UPDATE: text]
+        let programRegex = try? NSRegularExpression(pattern: #"\[PROGRAM_UPDATE\s*:\s*([\s\S]*?)\s*\]"#, options: options)
+        programRegex?.enumerateMatches(in: text, options: [], range: fullRange) { match, _, _ in
+            guard let match = match, match.numberOfRanges == 2 else { return }
+            let programText = nsText.substring(with: match.range(at: 1))
+            LearnerProfileManager.shared.updateTeachingProgram(programText)
+            
+            // IF PROGRAM IS UPDATED, ASSESSMENT IS DE-FACTO COMPLETE
+            if !LearnerProfileManager.shared.currentProfile.isInitialAssessmentComplete {
+                LearnerProfileManager.shared.setAssessmentComplete()
+            }
+            
+            AppLogger.network.info("Teaching program updated.")
         }
     }
 }

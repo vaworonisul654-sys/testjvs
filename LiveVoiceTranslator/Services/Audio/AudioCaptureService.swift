@@ -140,7 +140,8 @@ final class AudioCaptureService {
             // .videoChat mode is significantly louder and clearer for hardware speaker output than .voiceChat
             try session.setCategory(.playAndRecord, mode: .videoChat, options: [
                 .defaultToSpeaker,
-                .allowBluetoothHFP
+                .allowBluetoothHFP,
+                .duckOthers
             ])
             // Don't force sample rate — let system use optimal native rate (48kHz)
             // We downsample in software which gives cleaner results

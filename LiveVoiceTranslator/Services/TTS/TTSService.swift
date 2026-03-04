@@ -91,8 +91,8 @@ final class TTSService: NSObject, AVSpeechSynthesizerDelegate {
             startEngine()
         }
 
-        // Apply aggressive but clean 10.0x gain (increased from 6.0x for max loudness)
-        // Using 10x gain with sophisticated limiting provides massive volume without clipping.
+        // Apply high-gain 10.0x boost (User requested 10x louder)
+        // Combined with professional limiter to preserve signal quality.
         let amplifiedData = amplifyPCM(data, gain: 10.0)
 
         let frameCount = UInt32(amplifiedData.count) / 2
@@ -169,21 +169,21 @@ final class TTSService: NSObject, AVSpeechSynthesizerDelegate {
     private func ensureAudioSession() {
         let session = AVAudioSession.sharedInstance()
         do {
-            // Synchronized with AudioCaptureService for maximum power and no conflicts
+            // Synchronized with AudioCaptureService for clean playback and hardware button sync
+            // Reverting to .videoChat as it's louder and clearer for hardware speakers.
             try session.setCategory(.playAndRecord, mode: .videoChat, options: [
                 .defaultToSpeaker,
-                .allowBluetoothHFP
+                .allowBluetoothHFP,
+                .duckOthers
             ])
             try session.setActive(true)
-            // Force speaker port for maximum hardware acoustic power
-            try session.overrideOutputAudioPort(.speaker)
         } catch {
             print("ERROR: TTSService – Session config failed: \(error.localizedDescription)")
         }
     }
 
     private func startEngine() {
-        ensureAudioSession()
+        // Session config should be handled by the caller or once per session start
         do {
             try audioEngine.start()
             isEngineRunning = true
@@ -203,20 +203,22 @@ final class TTSService: NSObject, AVSpeechSynthesizerDelegate {
                 let dst = dstRaw.bindMemory(to: Int16.self)
                 
                 for i in 0..<sampleCount {
-                    // Optimized high gain
+                    // 10x Gain Boost
                     var sample = Float(src[i]) * gain
                     
-                    // Refined Professional Limiter:
-                    // 1. Soft-knee transition starts later (28000) for more headroom
-                    // 2. High-quality compression ratio (0.1) for clarity
-                    let limit: Float = 28000.0
-                    if sample > limit {
-                        sample = limit + (sample - limit) * 0.1 
-                    } else if sample < -limit {
-                        sample = -limit + (sample + limit) * 0.1
+                    // Professional Soft-Knee Limiter (Quality Preservation)
+                    // High-gain signals require a safer transition to prevent "unclean" square waves.
+                    let threshold: Float = 28000.0
+                    let hardLimit: Float = 32760.0
+                    
+                    if abs(sample) > threshold {
+                        let sign: Float = sample > 0 ? 1 : -1
+                        let excess = abs(sample) - threshold
+                        // Soft compression ratio (0.05) to squeeze peak without harsh clipping
+                        let compressed = threshold + (excess * 0.05)
+                        sample = min(compressed, hardLimit) * sign
                     }
                     
-                    // 3. Hardware-safe clamping
                     dst[i] = Int16(clamping: Int32(sample))
                 }
             }

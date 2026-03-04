@@ -169,7 +169,9 @@ struct PhotoPlaceholderView: View {
 
 struct MentorDashboardView: View {
     @Environment(\.dismiss) private var dismiss
-    private let profile = LearnerProfileManager.shared.currentProfile
+    private var manager = LearnerProfileManager.shared
+    
+    private var profile: LearnerProfile { manager.currentProfile }
     
     private let emerald = Color(red: 0, green: 0.88, blue: 0.56)
     private let bgColor = Color(red: 0.02, green: 0.027, blue: 0.059)

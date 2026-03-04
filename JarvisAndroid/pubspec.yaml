@@ -1,0 +1,45 @@
+name: jarvis_android
+description: J.A.R.V.I.S. - Just A Rather Very Intelligent System (Android Edition)
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  
+  # State Management & DI
+  provider: ^6.1.1
+  get_it: ^7.6.6
+  
+  # Networking & AI
+  web_socket_channel: ^2.4.0
+  http: ^1.1.2
+  
+  # Audio (Voice Live)
+  flutter_sound: ^9.4.5
+  audioplayers: ^5.2.1
+  permission_handler: ^11.1.0
+  path_provider: ^2.1.1
+  
+  # Storage
+  shared_preferences: ^2.2.2
+  
+  # UI & Design
+  google_fonts: ^6.1.0
+  intl: ^0.19.0
+  shimmer: ^3.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/fonts/

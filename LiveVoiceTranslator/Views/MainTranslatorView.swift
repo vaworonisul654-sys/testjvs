@@ -91,6 +91,9 @@ struct MainTranslatorView: View {
                 backgroundPhase = 1
             }
         }
+        .onDisappear {
+            viewModel.stopRecording()
+        }
     }
 
     // MARK: - Animated Background
@@ -279,13 +282,9 @@ struct MainTranslatorView: View {
                 .padding(.bottom, 10)
 
             VStack(spacing: 8) {
-                Text("Начните перевод")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-
                 Text("Нажмите на сферу и говорите")
-                    .font(.system(size: 14))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.6))
             }
         }
     }
@@ -375,11 +374,6 @@ struct MainTranslatorView: View {
                 audioLevel: viewModel.audioLevel,
                 onTap: { viewModel.toggleRecording() }
             )
-
-            Text(viewModel.state.isActive ? "Нажмите для остановки" : "Нажмите для перевода")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.white.opacity(0.3))
-                .shadow(color: .black.opacity(0.2), radius: 1)
         }
     }
 

@@ -16,6 +16,7 @@ final class GeminiLiveService {
     var onError: ((Error) -> Void)?
     var onSetupComplete: (() -> Void)?
     var onTurnComplete: (() -> Void)?
+    var onUserTranscription: ((String) -> Void)?
 
     // MARK: - Private
 
@@ -24,8 +25,8 @@ final class GeminiLiveService {
 
     // MARK: - Public API
 
-    /// Starts a bidirectional translation session with optional custom system instruction
-    func startSession(sourceLanguage: Language, targetLanguage: Language, customSystemInstruction: String? = nil) {
+    /// Starts a bidirectional translation session with optional custom system instruction and history
+    func startSession(sourceLanguage: Language, targetLanguage: Language, customSystemInstruction: String? = nil, history: String? = nil) {
         hasSetupCompleted = false
 
         guard let wsURL = AppConfiguration.geminiWebSocketURL else {
@@ -57,7 +58,8 @@ final class GeminiLiveService {
                 let setupMessage = buildSetupMessage(
                     sourceLanguage: sourceLanguage,
                     targetLanguage: targetLanguage,
-                    customSystemInstruction: customSystemInstruction
+                    customSystemInstruction: customSystemInstruction,
+                    history: history
                 )
                 try await webSocketService.sendText(setupMessage)
                 AppLogger.network.info("Gemini setup sent ✅")
@@ -125,8 +127,8 @@ final class GeminiLiveService {
 
     // MARK: - Message Building
 
-    private func buildSetupMessage(sourceLanguage: Language, targetLanguage: Language, customSystemInstruction: String? = nil) -> String {
-        let systemPrompt = customSystemInstruction ?? """
+    private func buildSetupMessage(sourceLanguage: Language, targetLanguage: Language, customSystemInstruction: String? = nil, history: String? = nil) -> String {
+        var baseInstruction = customSystemInstruction ?? """
         You are a REAL-TIME BIDIRECTIONAL voice translator between \(sourceLanguage.displayName) and \(targetLanguage.displayName).
 
         BEHAVIOR:
@@ -176,21 +178,20 @@ final class GeminiLiveService {
 
         🇹🇷 Türkçe (Turkish): Istanbul standard, Anatolian, Black Sea, Southeastern.
 
-        TRANSLATION QUALITY:
-        - Accuracy is the TOP PRIORITY. Every translation must be grammatically correct.
-        - Understand and correctly translate slang, colloquialisms, and informal speech.
+        TRANSLATION QUALITY & PHONETICS:
+        - Accuracy and NATURALNESS are the TOP PRIORITIES. Every translation must sound like a native speaker, not a machine.
+        - PHONETIC CLARITY: Speak clearly and at a moderate pace. Use natural intonation. Avoid slurring.
+        - Understand and correctly translate slang, colloquialisms, and informal speech into their EAR-NATURAL equivalents.
         - Apply correct grammar rules: declensions, conjugations, cases, gender agreement, articles, tenses.
         - Use idiomatic expressions in the target language — do NOT translate word-by-word.
         - Respect formal/informal registers (ты/Вы, tu/vous, tú/usted, คุณ/เธอ, etc.).
         - Handle code-switching (mixing languages in one sentence) gracefully.
         - Translate meaning, not individual words. Preserve intent, humor, and nuance.
-
-        OUTPUT RULES:
-        - Output ONLY the spoken translation. No explanations.
-        - Preserve natural tone and emotion.
-        - If speech is unclear, translate what you can understand.
-        - Do NOT repeat original speech, only the translation.
         """
+
+        if let conversationHistory = history, !conversationHistory.isEmpty {
+            baseInstruction += "\n\nЖИВАЯ ИСТОРИЯ ТЕКУЩЕГО ДИАЛОГА (КОНТЕКСТ):\n\(conversationHistory)"
+        }
 
         let setup: [String: Any] = [
             "setup": [
@@ -200,14 +201,14 @@ final class GeminiLiveService {
                     "speechConfig": [
                         "voiceConfig": [
                             "prebuiltVoiceConfig": [
-                                "voiceName": AppSettings.shared.voiceGender == AppSettings.VoiceGender.male ? "Puck" : "Aoede"
+                                "voiceName": AppSettings.shared.voiceGender == .male ? "Puck" : "Aoede"
                             ]
                         ]
                     ]
                 ],
                 "systemInstruction": [
                     "parts": [
-                        ["text": systemPrompt]
+                        ["text": baseInstruction]
                     ]
                 ]
             ]
@@ -267,8 +268,7 @@ final class GeminiLiveService {
             DispatchQueue.main.async { self.onSetupComplete?() }
             return
         }
-
-        // serverContent
+        // serverContent (AI response)
         if let serverContent = json["serverContent"] as? [String: Any] {
 
             // Turn complete — model finished responding
